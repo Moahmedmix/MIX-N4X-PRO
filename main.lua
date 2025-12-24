@@ -1,65 +1,64 @@
 --[[ 
-    🚀 BRAND: MIX-N4X PRO (STABLE VERSION)
-    👤 OWNER: MIX-N4X (2_panda223)
-    🛡️ STATUS: FIXED & TESTED
+    🚀 BRAND: MIX-N4X PRO OFFICIAL
+    👤 OWNER: MIX-N4X
+    🔗 SOURCE: https://raw.githubusercontent.com/Moahmedmix/MIX-N4X-PRO/main/main.lua
 ]]
 
--- [1] نظام الانتظار الذكي (يمنع كراش UserId و CreateWindow)
+-- [1] نظام الانتظار لضمان عدم حدوث Nil Error
 if not game:IsLoaded() then game.Loaded:Wait() end
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
--- [2] تحميل المكتبة مع حماية من الفشل
-local success, WindUI = pcall(function()
-    return loadstring(game:HttpGet('https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/main_example.lua'))()
-end)
+-- [2] تحميل المكتبة (استخدام الرابط المستقر لـ WindUI)
+local WindUI = loadstring(game:HttpGet('https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/main_example.lua'))()
 
-if not success or not WindUI then
-    warn("❌ فشل تحميل المكتبة! تأكد من اتصال الإنترنت.")
-    return
-end
-
--- [3] بناء الواجهة الأساسية
+-- [3] تخصيص الواجهة لتكون MIX-N4X (بدلاً من النسخة الافتراضية)
 local Window = WindUI:CreateWindow({
-    Title = "MIX-N4X PRO HUB",
+    Title = "🚀 MIX-N4X PRO HUB",
     Icon = "rbxassetid://10734950309",
-    Author = "by MIX-N4X",
-    Folder = "MIX_N4X_CONFIGS"
+    Author = "Created by MIX-N4X",
+    Folder = "MIX_N4X_DATA"
 })
 
--- [4] إضافة التبويبات (Tabs)
-local MainTab = Window:Tab({ Title = "⚡ Player", Icon = "user" })
-local VisualsTab = Window:Tab({ Title = "👁️ Visuals", Icon = "eye" })
+-- [4] إضافة التبويبات والميزات الخاصة بك
+local MainTab = Window:Tab({ Title = "⚡ Main", Icon = "user" })
 local CombatTab = Window:Tab({ Title = "⚔️ Combat", Icon = "swords" })
+local VisualsTab = Window:Tab({ Title = "👁️ Visuals", Icon = "eye" })
 
--- ==========================================
--- ميزات اللاعب (Main Tab)
--- ==========================================
-MainTab:Section({ Title = "Movement" })
-
+-- ميزات تبويب اللاعب
+MainTab:Section({ Title = "Movement Overdrive" })
 MainTab:Slider({
-    Title = "Speed Overdrive",
-    Min = 16, Max = 500, Default = 16,
+    Title = "Walk Speed",
+    Min = 16, Max = 400, Default = 16,
     Callback = function(v)
         if LP.Character and LP.Character:FindFirstChild("Humanoid") then
             LP.Character.Humanoid.WalkSpeed = v
         end
     end
 })
-
 MainTab:Toggle({
     Title = "Infinite Jump",
     Value = false,
     Callback = function(v) _G.InfJump = v end
 })
 
--- ==========================================
--- ميزات الرؤية (Visuals Tab)
--- ==========================================
-VisualsTab:Section({ Title = "Wallhacks" })
+-- ميزات تبويب القتال (Kill Aura)
+CombatTab:Section({ Title = "Attack Systems" })
+CombatTab:Toggle({
+    Title = "Kill Aura (Auto-Attack)",
+    Value = false,
+    Callback = function(v) _G.KillAura = v end
+})
+CombatTab:Slider({
+    Title = "Range",
+    Min = 5, Max = 40, Default = 15,
+    Callback = function(v) _G.AuraRange = v end
+})
 
+-- ميزات تبويب الرؤية (ESP)
+VisualsTab:Section({ Title = "Visual Aids" })
 VisualsTab:Toggle({
-    Title = "Player Highlights (ESP)",
+    Title = "Player ESP (Highlights)",
     Value = false,
     Callback = function(v)
         _G.ESP = v
@@ -73,29 +72,29 @@ VisualsTab:Toggle({
     end
 })
 
--- ==========================================
--- ميزات القتال (Combat Tab)
--- ==========================================
-CombatTab:Section({ Title = "Aura Settings" })
-
-CombatTab:Toggle({
-    Title = "Kill Aura",
-    Value = false,
-    Callback = function(v) _G.KillAura = v end
-})
-
--- ==========================================
--- الأنظمة الخلفية (Back-end Logic)
--- ==========================================
-
--- نظام القفز
+-- [5] الأنظمة البرمجية المشغلة للميزات (Logic)
 game:GetService("UserInputService").JumpRequest:Connect(function()
     if _G.InfJump and LP.Character and LP.Character:FindFirstChild("Humanoid") then
         LP.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 
--- نظام الـ ESP
+task.spawn(function()
+    while task.wait(0.1) do
+        if _G.KillAura then
+            for _, v in pairs(Players:GetPlayers()) do
+                if v ~= LP and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                    local dist = (LP.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
+                    if dist <= (_G.AuraRange or 15) then
+                        local tool = LP.Character:FindFirstChildOfClass("Tool")
+                        if tool then tool:Activate() end
+                    end
+                end
+            end
+        end
+    end
+end)
+
 task.spawn(function()
     while task.wait(2) do
         if _G.ESP then
@@ -110,27 +109,10 @@ task.spawn(function()
     end
 end)
 
--- نظام الـ Kill Aura
-task.spawn(function()
-    while task.wait(0.1) do
-        if _G.KillAura then
-            for _, v in pairs(Players:GetPlayers()) do
-                if v ~= LP and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                    local dist = (LP.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
-                    if dist <= 20 then
-                        local tool = LP.Character:FindFirstChildOfClass("Tool")
-                        if tool then tool:Activate() end
-                    end
-                end
-            end
-        end
-    end
-end)
-
--- إشعار الترحيب
+-- [6] إشعار النجاح
 WindUI:Notify({
     Title = "MIX-N4X PRO",
-    Content = "Welcome back, Master!",
+    Content = "Your Custom Script is Ready!",
     Type = "Success",
     Duration = 5
 })
