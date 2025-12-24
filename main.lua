@@ -1,165 +1,137 @@
 --[[ 
-    🛡️ MIX-N4X PRO HUB | FINAL MASTER INTEGRATION
-    Creator: Moahmedmix
-    Status: Secured, Bypassed & Optimized
+    🚀 BRAND: MIX-N4X PRO (STABLE VERSION)
+    👤 OWNER: MIX-N4X (2_panda223)
+    🛡️ STATUS: FIXED & TESTED
 ]]
 
--- [1] إعدادات المطور والمفاتيح
-local CreatorID = 1684333634 -- الـ UserID الخاص بك
-local VIP_Key = "MIX-ADMIN-2025" -- مفتاح VIP للطوارئ
-local User_Key_URL = "https://keysystem.cc/getkey/MIX-N4X" -- رابط المفتاح للمستخدمين
-
--- 🟢 دالة تشغيل السكريبت الرئيسي (Launch)
-local function LaunchMainScript()
-    local Players = game:GetService("Players")
-    local LP = Players.LocalPlayer
-    local UIS = game:GetService("UserInputService")
-    local Lighting = game:GetService("Lighting")
-    
-    -- نظام التحديث التلقائي للشخصية (لحل مشكلة الموت)
-    local Char, Humanoid
-    local function RefreshRef(newChar)
-        if not newChar then return end
-        Char = newChar
-        Humanoid = Char:WaitForChild("Humanoid", 10)
-    end
-    LP.CharacterAdded:Connect(RefreshRef)
-    if LP.Character then RefreshRef(LP.Character) end
-
-    -- [2] نظام اختراق الحمايات المتقدم (Bypass)
-    local AllowedSpeed = 16
-    pcall(function()
-        local mt = getrawmetatable(game)
-        local oldIndex = mt.__index
-        local oldNewIndex = mt.__newindex
-        local oldNamecall = mt.__namecall
-        setreadonly(mt, false)
-
-        mt.__index = newcclosure(function(t, k)
-            if not checkcaller() and typeof(t) == "Instance" then
-                if t:IsA("Humanoid") and k == "WalkSpeed" then return 16 end
-                if t:IsA("Humanoid") and k == "JumpPower" then return 50 end
-            end
-            return oldIndex(t, k)
-        end)
-
-        mt.__newindex = newcclosure(function(t, k, v)
-            if not checkcaller() and typeof(t) == "Instance" then
-                if t:IsA("Humanoid") and (k == "WalkSpeed" or k == "JumpPower") then
-                    if v == 16 or v == 50 then return oldNewIndex(t, k, v) end
-                    return 
-                end
-            end
-            return oldNewIndex(t, k, v)
-        end)
-
-        mt.__namecall = newcclosure(function(self, ...)
-            local method = getnamecallmethod()
-            if not checkcaller() then
-                if method == "Kick" or (method == "Destroy" and self == LP) then return nil end
-                if method == "FireServer" and tostring(self):find("Kick") then return nil end
-            end
-            return oldNamecall(self, ...)
-        end)
-        setreadonly(mt, true)
-    end)
-
-    -- [3] تحميل الواجهة والميزات (RedzLib)
-    local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/RedzLibV5/main/Source.Lua"))()
-    local Window = redzlib:MakeWindow({Name = "🛡️ MIX-N4X PRO", SubTitle = "Immortal Edition"})
-    
-    local PlayerTab = Window:MakeTab({"👤 Player", "user"})
-    local VisualsTab = Window:MakeTab({"👁️ Visuals", "eye"})
-    local ServerTab = Window:MakeTab({"⚙️ Server", "settings"})
-
-    -- ميزات اللاعب
-    PlayerTab:AddSection({"Movement Controls"})
-    PlayerTab:AddSlider({
-        Name = "Walk Speed",
-        Min = 16, Max = 250, Default = 16,
-        Callback = function(v)
-            AllowedSpeed = v
-            if Humanoid then Humanoid.WalkSpeed = v end
-        end
-    })
-
-    _G.InfJump = false
-    PlayerTab:AddToggle({Name = "Infinite Jump", Callback = function(v) _G.InfJump = v end})
-    UIS.JumpRequest:Connect(function()
-        if _G.InfJump and Humanoid then Humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
-    end)
-
-    -- ميزات الرؤية
-    VisualsTab:AddSection({"Environment & ESP"})
-    VisualsTab:AddToggle({
-        Name = "Player ESP",
-        Callback = function(v) 
-            _G.PlayerESP = v 
-            if not v then
-                for _, p in pairs(Players:GetPlayers()) do
-                    if p.Character and p.Character:FindFirstChild("MIX_HL") then
-                        p.Character.MIX_HL:Destroy()
-                    end
-                end
-            end
-        end
-    })
-
-    task.spawn(function()
-        while true do
-            if _G.PlayerESP then
-                for _, p in pairs(Players:GetPlayers()) do
-                    if p ~= LP and p.Character and not p.Character:FindFirstChild("MIX_HL") then
-                        local hl = Instance.new("Highlight", p.Character)
-                        hl.Name = "MIX_HL"
-                        hl.FillColor = Color3.fromRGB(255, 0, 0)
-                    end
-                end
-            end
-            task.wait(2)
-        end
-    end)
-
-    VisualsTab:AddButton({
-        Name = "Full Bright",
-        Callback = function()
-            Lighting.Brightness = 2
-            Lighting.ClockTime = 14
-            Lighting.GlobalShadows = false
-        end
-    })
-
-    -- ميزات السيرفر
-    ServerTab:AddButton({Name = "Server Hop", Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId) end})
-    ServerTab:AddButton({Name = "Rejoin", Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, LP) end})
-
-    warn("✅ MIX-N4X PRO LOADED SUCCESSFULLY")
-end
-
--- 🔐 [4] نظام بوابة الأمان
+-- [1] نظام الانتظار الذكي (يمنع كراش UserId و CreateWindow)
+if not game:IsLoaded() then game.Loaded:Wait() end
 local Players = game:GetService("Players")
-local LP = Players.LocalPlayer
+local LP = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
-if LP.UserId == CreatorID then
-    LaunchMainScript()
-else
-    local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/RedzLibV5/main/Source.Lua"))()
-    local AuthWin = redzlib:MakeWindow({Name = "🔑 MIX-N4X AUTH", SubTitle = "Verification Required"})
-    local Tab = AuthWin:MakeTab({"Key System", "lock"})
+-- [2] تحميل المكتبة مع حماية من الفشل
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet('https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/main_example.lua'))()
+end)
 
-    Tab:AddTextBox({
-        Name = "Enter Key",
-        Callback = function(input)
-            if input == VIP_Key or input == "MIX-N4X-FREE" then 
-                AuthWin:Destroy()
-                LaunchMainScript()
+if not success or not WindUI then
+    warn("❌ فشل تحميل المكتبة! تأكد من اتصال الإنترنت.")
+    return
+end
+
+-- [3] بناء الواجهة الأساسية
+local Window = WindUI:CreateWindow({
+    Title = "MIX-N4X PRO HUB",
+    Icon = "rbxassetid://10734950309",
+    Author = "by MIX-N4X",
+    Folder = "MIX_N4X_CONFIGS"
+})
+
+-- [4] إضافة التبويبات (Tabs)
+local MainTab = Window:Tab({ Title = "⚡ Player", Icon = "user" })
+local VisualsTab = Window:Tab({ Title = "👁️ Visuals", Icon = "eye" })
+local CombatTab = Window:Tab({ Title = "⚔️ Combat", Icon = "swords" })
+
+-- ==========================================
+-- ميزات اللاعب (Main Tab)
+-- ==========================================
+MainTab:Section({ Title = "Movement" })
+
+MainTab:Slider({
+    Title = "Speed Overdrive",
+    Min = 16, Max = 500, Default = 16,
+    Callback = function(v)
+        if LP.Character and LP.Character:FindFirstChild("Humanoid") then
+            LP.Character.Humanoid.WalkSpeed = v
+        end
+    end
+})
+
+MainTab:Toggle({
+    Title = "Infinite Jump",
+    Value = false,
+    Callback = function(v) _G.InfJump = v end
+})
+
+-- ==========================================
+-- ميزات الرؤية (Visuals Tab)
+-- ==========================================
+VisualsTab:Section({ Title = "Wallhacks" })
+
+VisualsTab:Toggle({
+    Title = "Player Highlights (ESP)",
+    Value = false,
+    Callback = function(v)
+        _G.ESP = v
+        if not v then
+            for _, p in pairs(Players:GetPlayers()) do
+                if p.Character and p.Character:FindFirstChild("N4X_ESP") then
+                    p.Character.N4X_ESP:Destroy()
+                end
             end
         end
-    })
+    end
+})
 
-    Tab:AddButton({
-        Name = "Get Key (Copy Link)",
-        Callback = function() setclipboard(User_Key_URL) end
-    })
-end
+-- ==========================================
+-- ميزات القتال (Combat Tab)
+-- ==========================================
+CombatTab:Section({ Title = "Aura Settings" })
+
+CombatTab:Toggle({
+    Title = "Kill Aura",
+    Value = false,
+    Callback = function(v) _G.KillAura = v end
+})
+
+-- ==========================================
+-- الأنظمة الخلفية (Back-end Logic)
+-- ==========================================
+
+-- نظام القفز
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if _G.InfJump and LP.Character and LP.Character:FindFirstChild("Humanoid") then
+        LP.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+-- نظام الـ ESP
+task.spawn(function()
+    while task.wait(2) do
+        if _G.ESP then
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LP and p.Character and not p.Character:FindFirstChild("N4X_ESP") then
+                    local h = Instance.new("Highlight", p.Character)
+                    h.Name = "N4X_ESP"
+                    h.FillColor = Color3.fromRGB(255, 0, 0)
+                end
+            end
+        end
+    end
+end)
+
+-- نظام الـ Kill Aura
+task.spawn(function()
+    while task.wait(0.1) do
+        if _G.KillAura then
+            for _, v in pairs(Players:GetPlayers()) do
+                if v ~= LP and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                    local dist = (LP.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
+                    if dist <= 20 then
+                        local tool = LP.Character:FindFirstChildOfClass("Tool")
+                        if tool then tool:Activate() end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- إشعار الترحيب
+WindUI:Notify({
+    Title = "MIX-N4X PRO",
+    Content = "Welcome back, Master!",
+    Type = "Success",
+    Duration = 5
+})
 
