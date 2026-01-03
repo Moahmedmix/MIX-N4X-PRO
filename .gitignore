@@ -1,0 +1,5 @@
+# Roblox studio temporary / export files
+*.rbxl
+*.rbxlx
+.vscode/
+.DS_Store

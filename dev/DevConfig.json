@@ -1,0 +1,18 @@
+{
+  "ownerUserId": 12345678,
+  "tickInterval": 1,
+  "scenarioTimeout": 30,
+  "features": {
+    "AutoFarmXP": false,
+    "AutoFarmCash": false,
+    "AutoCollectables": false,
+    "AutoInstantRevive": false,
+    "AutoRespawn": false,
+    "WalkSpeed": 16,
+    "JumpPower": 50,
+    "InfiniteJump": false,
+    "FullBright": false,
+    "RemoveFog": false,
+    "ESP": false
+  }
+}
