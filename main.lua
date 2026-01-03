@@ -1,133 +1,218 @@
--- [[ 🚀 MIX-N4X | EVADE V10 ULTIMATE HUB ]]
--- مدمج فيه ميزات Real King و iFergggg
+-- [[ 🚀 MIX-N4X HUB | SMART LOGIC EDITION V1.0 ]]
+-- النسخة النهائية منظمة وخانات/sections لكل ميزة + حفظ الإعدادات
 
-for _, v in pairs(game.CoreGui:GetChildren()) do
-    if v.Name == "WindUI" then v:Destroy() end
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService") -- لحفظ الإعدادات كـ JSON
+
+-- ملف حفظ الإعدادات
+local SettingsFile = "MIXN4X_Settings.json"
+local Settings = {}
+
+-- تحميل WindUI
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+end)
+if not success then
+    warn("Failed to load WindUI")
+    return
 end
 
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
-
+-- فتح النافذة الرئيسية
 local Window = WindUI:CreateWindow({
-    Title = "🚀 MIX-N4X: EVADE V10",
-    Author = "REAL KING EDITION",
-    Icon = "solar:shield-star-bold",
-    Folder = "MIX_EVADE_V10",
-    Size = UDim2.fromOffset(600, 520),
+    Title = "MIX-N4X HUB V1.0",
+    Author = "By MIX-N4X",
+    Icon = "rbxthumb://type=AvatarHeadShot&id=" .. Player.UserId .. "&w=150&h=150",
+    Folder = "MIXN4X_SMART_LOGIC",
+    Size = UDim2.fromOffset(600, 500),
     Transparent = false,
     Topbar = { ButtonsType = "Mac", Height = 40 }
 })
 
--- [1] تبويب الميزات التلقائية (Automation)
-local AutoTab = Window:Tab({ Title = "Auto Features", Icon = "solar:magic-stick-bold" })
-local AutoSec = AutoTab:Section({ Title = "Auto Gameplay" })
+-- ================= حفظ/تحميل الإعدادات =================
+local function SaveSettings()
+    pcall(function()
+        writefile(SettingsFile, HttpService:JSONEncode(Settings))
+    end)
+end
 
-AutoSec:Toggle({
-    Title = "Auto Revive (Godly)",
-    Desc = "تقويم اللاعبين من أبعد مسافة ممكنة",
-    Value = false,
+local function LoadSettings()
+    if isfile(SettingsFile) then
+        local data = readfile(SettingsFile)
+        Settings = HttpService:JSONDecode(data)
+    else
+        Settings = {}
+    end
+end
+
+LoadSettings()
+
+-- ================= Main Logic =================
+local MainTab = Window:Tab({ Title = "Main Logic", Icon = "solar:cpu-bold" })
+local MovementSec = MainTab:Section({ Title = "Adaptive Movement" })
+
+MovementSec:Slider({
+    Title = "Speed Management",
+    Desc = "Smart attribute manipulation",
+    Value = { Min = 16, Max = 250, Default = Settings.Speed or 16 },
+    Callback = function(v)
+        Settings.Speed = v
+        SaveSettings()
+        task.spawn(function()
+            pcall(function()
+                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                    Player.Character.Humanoid:SetAttribute("RealSpeed", v)
+                end
+            end)
+        end)
+    end
+})
+
+-- ================= God Mode =================
+local SafetyTab = Window:Tab({ Title = "Fail-Safe", Icon = "solar:shield-bold" })
+
+SafetyTab:Toggle({
+    Title = "Smart God Mode",
+    Desc = "Maintains character integrity",
+    Value = Settings.GodMode or false,
     Callback = function(state)
+        Settings.GodMode = state
+        SaveSettings()
+        _G.GodMode = state
+        if state then
+            task.spawn(function()
+                while _G.GodMode do
+                    pcall(function()
+                        if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                            Player.Character.Humanoid.Parent = nil
+                            Player.Character.Humanoid.Parent = Player.Character
+                        end
+                    end)
+                    task.wait(1)
+                end
+            end)
+        end
+    end
+})
+
+-- ================= Automation =================
+local AutoTab = Window:Tab({ Title = "Automation", Icon = "solar:magic-stick-bold" })
+
+AutoTab:Toggle({
+    Title = "Smart Auto-Revive",
+    Desc = "Logic-based player assistance",
+    Value = Settings.AutoRevive or false,
+    Callback = function(state)
+        Settings.AutoRevive = state
+        SaveSettings()
         _G.AutoRevive = state
         task.spawn(function()
             while _G.AutoRevive do
-                task.wait()
                 pcall(function()
-                    for _, v in pairs(game.Workspace.Game.Players:GetChildren()) do
-                        if v:FindFirstChild("ReviveConfig") and v.ReviveConfig:FindFirstChild("RevivePrompt") then
-                            fireproximityprompt(v.ReviveConfig.RevivePrompt)
+                    if workspace:FindFirstChild("Game") and workspace.Game:FindFirstChild("Players") then
+                        for _, v in pairs(workspace.Game.Players:GetChildren()) do
+                            if v:FindFirstChild("ReviveConfig") then
+                                local prompt = v.ReviveConfig:FindFirstChildOfClass("ProximityPrompt")
+                                if prompt then fireproximityprompt(prompt) end
+                            end
                         end
                     end
                 end)
+                task.wait(0.2)
             end
         end)
     end
 })
 
-AutoSec:Toggle({
-    Title = "Auto Respawn",
-    Desc = "ترسبن تلقائياً أول ما تموت بدون انتظار",
-    Value = false,
-    Callback = function(state)
-        _G.AutoRespawn = state
+-- ================= Visuals =================
+local VisualTab = Window:Tab({ Title = "Environment", Icon = "solar:filters-bold" })
+VisualTab:Section({ Title = "Environment Control" })
+
+VisualTab:Button({
+    Title = "Optimize Visuals",
+    Desc = "Full bright and remove fog",
+    Callback = function()
+        pcall(function()
+            Lighting.Brightness = 2
+            Lighting.ClockTime = 14
+            Lighting.FogEnd = 100000
+            Lighting.GlobalShadows = false
+        end)
+        WindUI:Notify({
+            Title = "Visuals",
+            Content = "Environment optimized",
+            Duration = 3
+        })
+    end
+})
+
+-- ================= Performance =================
+local PerfTab = Window:Tab({ Title = "📊 Performance", Icon = "solar:speed-bold" })
+PerfTab:Section({ Title = "Extreme FPS Boosters" })
+
+-- Smooth Materials
+PerfTab:Toggle({
+    Title = "Smooth Materials (Plastic)",
+    Desc = "يحول كل الأسطح لبلاستيك لتقليل الضغط على المعالج",
+    Value = Settings.SmoothMaterials or false,
+    Callback = function(Value)
+        Settings.SmoothMaterials = Value
+        SaveSettings()
         task.spawn(function()
-            while _G.AutoRespawn do
-                task.wait()
-                if game.Players.LocalPlayer.Character:FindFirstChild("GameScript") then -- علامة الموت في Evade
-                    game:GetService("ReplicatedStorage").Events.Respawn:FireServer()
+            for _, v in pairs(game:GetDescendants()) do
+                if v:IsA("Part") or v:IsA("MeshPart") or v:IsA("UnionOperation") then
+                    v.Material = Enum.Material.SmoothPlastic
+                    v.Reflectance = 0
                 end
             end
         end)
     end
 })
 
--- [2] تبويب القتال والأسلحة (Combat/Tools)
-local CombatTab = Window:Tab({ Title = "Combat", Icon = "solar:sword-bold" })
-
-CombatTab:Toggle({
-    Title = "Silent Aim (Tools)",
-    Desc = "توجيه الأدوات (مثل الـ Cola) تلقائياً",
-    Value = false,
-    Callback = function(state)
-        _G.SilentAim = state
-        -- كود توجيه الأدوات المتقدم من Real King
-    end
-})
-
--- [3] تبويب الحركة الفخمة (Movement PRO)
-local MoveTab = Window:Tab({ Title = "Movement", Icon = "solar:running-bold" })
-
-MoveTab:Slider({
-    Title = "WalkSpeed",
-    Value = { Min = 16, Max = 350, Default = 16 },
-    Callback = function(v) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v end
-})
-
-MoveTab:Toggle({
-    Title = "Infinite Jump",
-    Value = false,
-    Callback = function(state)
-        _G.InfJump = state
-        game:GetService("UserInputService").JumpRequest:Connect(function()
-            if _G.InfJump then game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping") end
+-- Remove Decals & Textures
+PerfTab:Toggle({
+    Title = "Remove Textures & Decals",
+    Desc = "يمسح الصور والملصقات من الجدران لزيادة السرعة",
+    Value = Settings.RemoveDecals or false,
+    Callback = function(Value)
+        Settings.RemoveDecals = Value
+        SaveSettings()
+        task.spawn(function()
+            for _, v in pairs(game:GetDescendants()) do
+                if v:IsA("Decal") or v:IsA("Texture") then
+                    v.Transparency = Value and 1 or 0
+                end
+            end
         end)
     end
 })
 
-MoveTab:Toggle({
-    Title = "No Slowdown",
-    Desc = "امشي بكامل سرعتك حتى وأنت شايل حد",
-    Value = false,
-    Callback = function(state)
-        -- ميزة إلغاء التباطؤ
+-- Disable Shadows
+PerfTab:Toggle({
+    Title = "Disable Shadows",
+    Desc = "إيقاف كل الظلال في اللعبة (يرفع الفريمات جداً)",
+    Value = Settings.DisableShadows or false,
+    Callback = function(Value)
+        Settings.DisableShadows = Value
+        SaveSettings()
+        task.spawn(function()
+            Lighting.GlobalShadows = not Value
+            for _, v in pairs(game:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.CastShadow = not Value
+                end
+            end
+        end)
     end
 })
 
--- [4] تبويب كشف الأماكن (Visuals/ESP)
-local VisualTab = Window:Tab({ Title = "Visuals", Icon = "solar:eye-bold" })
+-- باقي Performance وButtons زي Remove Particles, Clear Atmosphere, Unlock FPS ... ممكن أضيفهم بنفس الطريقة مع حفظ الإعدادات
 
-VisualTab:Toggle({
-    Title = "Player/Bot ESP",
-    Value = false,
-    Callback = function(state)
-        -- نظام الـ ESP المتطور
-    end
+-- ================= Final Notification =================
+WindUI:Notify({
+    Title = "MIX-N4X HUB",
+    Content = "Smart Framework Loaded Successfully (V1.0) with Settings",
+    Duration = 5
 })
-
-VisualTab:Button({
-    Title = "Full Bright (No Dark)",
-    Callback = function()
-        game:GetService("Lighting").Brightness = 2
-        game:GetService("Lighting").ClockTime = 14
-        game:GetService("Lighting").FogEnd = 100000
-    end
-})
-
--- [5] الحماية (Anti-Ban)
-local SecurityTab = Window:Tab({ Title = "Security", Icon = "solar:shield-check-bold" })
-SecurityTab:Toggle({
-    Title = "Anti-Chat Logger",
-    Desc = "يمنع اللعبة من مراقبة كلامك",
-    Value = true,
-    Callback = function(state) end
-})
-
-WindUI:Notify({ Title = "MIX-N4X V10 PRO", Content = "All Real King features integrated!", Duration = 5 })
